@@ -27,8 +27,9 @@ cd molecule-ntp
 molecule test
 ```
 
-This branch uses docker as its driver, so docker must be installed on the
-system running molecule.
+This branch uses the `delegated` driver. You must ensure that your ssh
+configuration is setup to connect to the SUT, that you have an ssh-agent
+running, and that the key for the SUT has been added to the running agent.
 
 Role Variables
 --------------
