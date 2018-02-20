@@ -11,11 +11,15 @@ driver:
 lint:
   name: yamllint
 platforms:
-  - name: 172.20.41.63
+  - name: aio1
 provisioner:
   name: ansible
   lint:
     name: ansible-lint
+  inventory:
+    links:
+      group_vars: /opt/openstack-ansible/group_vars
+      host_vars: /opt/openstack-ansible/host_vars
 scenario:
   name: default
 verifier:
