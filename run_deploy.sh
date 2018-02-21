@@ -60,7 +60,7 @@ if [ ! -f ${WORKING_DIR}/dynamic_inventory.json ]; then
 fi
 
 pushd ${TEST_SOURCE}
-./moleculerize.py ${WORKING_DIR}/dynamic_inventory.json
+./moleculerize.py --output molecule/default/molecule.yml ${WORKING_DIR}/dynamic_inventory.json
 
 # run molecule anisble-playbook with osa inventory
 export ANSIBLE_HOST_KEY_CHECKING=False
