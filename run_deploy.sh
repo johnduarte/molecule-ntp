@@ -48,32 +48,25 @@ fi
 PIP_OPTIONS="-c ${CONSTRAINTS} -r ${REQUIREMENTS}"
 ${VENV_PIP} install ${PIP_OPTIONS} || ${VENV_PIP} install --isolated ${PIP_OPTIONS}
 
-
-# run molecule anisble-playbook with osa inventory
-export ANSIBLE_HOST_KEY_CHECKING=False
-# TODO: This is a work around until a method for dynamically creating the
-# 'platforms' in the molecule config file can be ironed out.
+# generate moleculerized inventory from osa dynamic inventory
 if [ ! -d ${INVENTORY} ]; then
     echo "ERROR: The rpc-o dynamic inventory is not present" 1>&2
     exit 1
 fi
-if [ ! -f  ${WORKING_DIR}/${TEST_SOURCE}/molecule/default/playbook.yml ]; then
-    echo "ERROR: The molecule playbook is not present" 1>&2
+${INVENTORY}/dynamic_inventory.py > ${WORKING_DIR}/dynamic_inventory.json
+if [ ! -f ${WORKING_DIR}/dynamic_inventory.json ]; then
+    echo "ERROR: The dynamic inventory json file is not present" 1>&2
     exit 1
 fi
-ansible-playbook -i ${INVENTORY} \
-    ${WORKING_DIR}/${TEST_SOURCE}/molecule/default/playbook.yml
 
-# run molecule testinfra suite with osa inventory
-# TODO: This is a work around until a method for dynamically creating the
-# 'platforms' in the molecule config file can be ironed out.
-if [ ! -f ${WORKING_DIR}/${TEST_SOURCE}/molecule/default/tests/test_default.py ]; then
-    echo "ERROR: The testinfa test file is not present" 1>&2
-    exit 1
-fi
-export MOLECULE_INVENTORY_FILE=${INVENTORY}
-pytest --connection=ansible \
-       --ansible-inventory=${INVENTORY} \
-       ${WORKING_DIR}/${TEST_SOURCE}/molecule/default/tests/test_default.py
+pushd ${TEST_SOURCE}
+./moleculerize.py ${WORKING_DIR}/dynamic_inventory.json
+
+# run molecule anisble-playbook with osa inventory
+export ANSIBLE_HOST_KEY_CHECKING=False
+
+molecule converge
+molecule verify
+popd
 
 popd
