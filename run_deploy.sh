@@ -8,8 +8,8 @@ TEST_SOURCE_BASE=https://github.com/johnduarte
 TEST_SOURCE=molecule-ntp
 TEST_SOURCE_REPO="${TEST_SOURCE_BASE}/${TEST_SOURCE}"
 TEST_BRANCH=rpc-glue
-CONSTRAINTS="${TEST_SOURCE}/constraints.txt"
-REQUIREMENTS="${TEST_SOURCE}/requirements.txt"
+CONSTRAINTS="${WORKING_DIR}/${TEST_SOURCE}/constraints.txt"
+REQUIREMENTS="${WORKING_DIR}/${TEST_SOURCE}/requirements.txt"
 INVENTORY="/opt/openstack-ansible/playbooks/inventory"
 
 # clone molecule test prototype
@@ -49,12 +49,18 @@ PIP_OPTIONS="-c ${CONSTRAINTS} -r ${REQUIREMENTS}"
 ${VENV_PIP} install ${PIP_OPTIONS} || ${VENV_PIP} install --isolated ${PIP_OPTIONS}
 
 
-# run molecule
-pushd ${TEST_SOURCE}
+# run molecule anisble-playbook with osa inventory
+# TODO: This is a work around until a method for dynamically creating the
+# 'platforms' in the molecule config file can be ironed out.
+ansible-playbook -i ${INVENTORY}
+${WORKING_DIR}/${TEST_SOURCE}/molecule/default/playbook.yml
 
-molecule converge
-molecule verify
-
-popd
+# run molecule testinfra suite with osa inventory
+# TODO: This is a work around until a method for dynamically creating the
+# 'platforms' in the molecule config file can be ironed out.
+export MOLECULE_INVENTORY_FILE=${INVENTORY}
+pytest --connection=ansible \
+       --ansible-inventory=${INVENTORY} \
+       ${WORKING_DIR}/${TEST_SOURCE}/molecule/default/tests/test_default.py
 
 popd
